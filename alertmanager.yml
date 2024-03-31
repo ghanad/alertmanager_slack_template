@@ -1,0 +1,30 @@
+global:
+  slack_api_url: [SLACK-WEBHOOK]
+
+
+route:
+  group_by: ['alertname']
+  group_wait: 5m
+  group_interval: 10m
+  repeat_interval: 5d
+  receiver: 'slack_default'
+
+receivers:
+  - name: 'slack_default'
+    slack_configs:
+    - channel: '#default'
+      send_resolved: true
+      color: '{{ template "slack.color" . }}'
+      title: '{{ template "slack.title" . }}'
+      text: '{{ template "slack.text" . }}'
+
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['instance']
+
+templates:
+- '/etc/alertmanager/slack_template.tmpl'
