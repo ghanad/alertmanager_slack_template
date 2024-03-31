@@ -1,0 +1,75 @@
+{{/* Severity of the alert */}}
+{{ define "__alert_severity" -}}
+    {{- if eq .CommonLabels.severity "critical" -}}
+    *Severity:* `Critical`
+    {{- else if eq .CommonLabels.severity "warning" -}}
+    *Severity:* `Warning`
+    {{- else if eq .CommonLabels.severity "info" -}}
+    *Severity:* `Info`
+    {{- else -}}
+    *Severity:* :question: {{ .CommonLabels.severity }}
+    {{- end }}
+{{- end }}
+
+
+{{/* Title of the Slack alert with dynamic status */}}
+{{ define "slack.title" -}}
+  {{- $firing := false -}}
+  {{- $resolved := false -}}
+  {{- range .Alerts -}}
+    {{- if eq .Status "firing" -}}
+      {{- $firing = true -}}
+    {{- else if eq .Status "resolved" -}}
+      {{- $resolved = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if and $firing $resolved -}}
+    [FIRING: {{ .Alerts.Firing | len }}, RESOLVED: {{ .Alerts.Resolved | len }}] {{ .CommonLabels.alertname }}
+  {{- else if $firing -}}
+    [FIRING: {{ .Alerts.Firing | len }}] {{ .CommonLabels.alertname }}
+  {{- else if $resolved -}}
+    [RESOLVED: {{ .Alerts.Resolved | len }}] {{ .CommonLabels.alertname }}
+  {{- else -}}
+    [UNKNOWN STATUS]
+  {{- end }}
+{{- end }}
+
+{{/* Color of Slack attachment (appears as line next to alert )*/}}
+{{ define "slack.color" -}}
+    {{ if eq .Status "firing" -}}
+        {{ if eq .CommonLabels.severity "warning" -}}
+            warning
+        {{- else if eq .CommonLabels.severity "critical" -}}
+            danger
+        {{- else -}}
+            #439FE0
+        {{- end -}}
+    {{ else -}}
+    good
+    {{- end }}
+{{- end }}
+
+
+{{/* The text to display in the alert */}}
+{{ define "slack.text" -}}
+{{ template "__alert_severity" . }}
+{{/* Firing Alerts Section */}}
+{{- if eq .Status "firing" }}
+:fire: *Firing Alerts:*
+  {{- range .Alerts -}}
+    {{- if eq .Status "firing" }}
+- {{ .Annotations.summary }} - StartAt: {{ .StartsAt.Local.Format "2006-01-02 15:04:05" }}
+    {{- end -}}
+  {{- end -}}
+{{- end }}
+{{/* Resolved Alerts Section */}}
+{{- if gt (len .Alerts.Resolved) 0 -}}
+  :white_check_mark: *Resolved Alerts:*
+  {{- range .Alerts -}}
+    {{- if eq .Status "resolved" }}
+- {{ .Annotations.summary }}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- end }}
+
