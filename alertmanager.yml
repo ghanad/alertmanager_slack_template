@@ -13,11 +13,11 @@ route:
 receivers:
   - name: 'slack_default'
     slack_configs:
-    - channel: '#default'
-      send_resolved: true
-      color: '{{ template "slack.color" . }}'
-      title: '{{ template "slack.title" . }}'
-      text: '{{ template "slack.text" . }}'
+      - channel: '#default'
+        send_resolved: true
+        color: '{{ template "slack.color" . }}'
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
 
 
 inhibit_rules:
