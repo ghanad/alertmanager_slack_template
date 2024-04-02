@@ -1,3 +1,4 @@
+---
 global:
   slack_api_url: [SLACK-WEBHOOK]
 
@@ -27,4 +28,4 @@ inhibit_rules:
     equal: ['instance']
 
 templates:
-- '/etc/alertmanager/slack_template.tmpl'
+  - '/etc/alertmanager/slack_template.tmpl'
