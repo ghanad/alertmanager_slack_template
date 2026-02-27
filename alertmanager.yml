@@ -1,24 +1,24 @@
 ---
-global:
-  slack_api_url: [SLACK-WEBHOOK]
-
-
 route:
-  group_by: ['alertname']
+  group_by: ['alertname', 'channel']
+  receiver: 'slack_dynamic'
   group_wait: 5m
   group_interval: 10m
   repeat_interval: 5d
-  receiver: 'slack_default'
 
 receivers:
-  - name: 'slack_default'
+  - name: 'slack_dynamic'
     slack_configs:
-      - channel: '#default'
+      - api_url: 'https://slack.com/api/chat.postMessage'
+        http_config:
+          authorization:
+            type: Bearer
+            credentials: 'BOT TOKEN'   # Bot Token
+        channel: '{{ with .CommonLabels.channel }}{{ . }}{{ else }}default{{ end }}'
         send_resolved: true
         color: '{{ template "slack.color" . }}'
         title: '{{ template "slack.title" . }}'
         text: '{{ template "slack.text" . }}'
-
 
 inhibit_rules:
   - source_match:
